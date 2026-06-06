@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from .infrastructure.api.routers import alerts
+from exercise_2.infrastructure.api.routers import alerts
 
 app = FastAPI(
     title="Security Alerts API",

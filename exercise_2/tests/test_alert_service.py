@@ -1,13 +1,11 @@
-import pytest
-
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock
 
+import pytest
 from fastapi import HTTPException
 
 from exercise_2.application.services import AlertService
 from exercise_2.domain.models import Alert
-
 from exercise_2.infrastructure.api.schemas import (
     AlertCreateRequest,
     SeverityEnum,
@@ -41,8 +39,10 @@ async def test_create_alert_success(
     repository,
     alert_request,
 ):
+    # Mock repository to return no duplicate alerts
     repository.find_recent_duplicate.return_value = None
 
+    # Create an alert object that will be returned by repository.save()
     saved_alert = Alert(
         alert_id="123",
         title=alert_request.title,
@@ -54,12 +54,16 @@ async def test_create_alert_success(
         created_at=datetime.now(timezone.utc),
     )
 
+    # Mock repository.save() to return the created alert
     repository.save.return_value = saved_alert
 
+    # Call the service method to create an alert
     result = await service.create_alert(alert_request)
 
+    # Assert the alert was created successfully with correct ID
     assert result.alert_id == "123"
 
+    # Verify that duplicate check and save operations were called exactly once
     repository.find_recent_duplicate.assert_called_once()
     repository.save.assert_called_once()
 
@@ -70,6 +74,7 @@ async def test_create_alert_duplicate_raises_409(
     repository,
     alert_request,
 ):
+    # Mock repository to return an existing duplicate alert
     repository.find_recent_duplicate.return_value = Alert(
         alert_id="existing",
         title=alert_request.title,
@@ -81,9 +86,12 @@ async def test_create_alert_duplicate_raises_409(
         created_at=datetime.now(timezone.utc),
     )
 
+    # Attempt to create an alert and verify it raises HTTPException with 409 status
     with pytest.raises(HTTPException) as exc:
         await service.create_alert(alert_request)
 
+    # Assert the status code is 409 Conflict for duplicate alert
     assert exc.value.status_code == 409
 
+    # Verify that save was never called since duplicate was detected
     repository.save.assert_not_called()
