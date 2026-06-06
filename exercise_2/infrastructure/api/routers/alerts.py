@@ -64,6 +64,7 @@ async def create_alert(
         source_ip=alert.source_ip,
         status=alert.status,
         created_at=alert.created_at,
+        updated_at=alert.updated_at,
         version=alert.version,
     )
 
@@ -119,6 +120,7 @@ async def get_alerts(
                 source_ip=alert.source_ip,
                 status=alert.status,
                 created_at=alert.created_at,
+                updated_at=alert.updated_at,
                 version=alert.version,
             )
             for alert in page.items

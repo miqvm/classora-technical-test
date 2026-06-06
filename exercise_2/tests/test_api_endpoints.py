@@ -48,6 +48,7 @@ async def test_create_alert_endpoint_success(mock_service):
         description="Frequent SYN packets.",
         status="new",
         created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
         tags=["recon"],
     )
 
@@ -143,6 +144,7 @@ async def test_get_alerts_endpoint(mock_service):
                 description="File hash matched ransomware.",
                 status="new",
                 created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
                 tags=[],
             )
         ],

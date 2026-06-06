@@ -76,6 +76,11 @@ class AlertResponse(BaseModel):
         description="Timestamp indicating when the alert was created (ISO-8601 UTC).",
         examples=["2026-06-05T16:30:00Z"],
     )
+    updated_at: datetime = Field(
+        ...,
+        description="Timestamp indicating when the alert was last updated (ISO-8601 UTC).",
+        examples=["2026-06-05T17:00:00Z"],
+    )
     version: int = Field(
         ...,
         description="Current version of the alert.",

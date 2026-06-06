@@ -76,6 +76,11 @@ class AlertResponse(BaseModel):
         description="Timestamp indicating when the alert was created (ISO-8601 UTC).",
         examples=["2026-06-05T16:30:00Z"],
     )
+    updated_at: datetime = Field(
+        ...,
+        description="Timestamp indicating when the alert was last updated (ISO-8601 UTC).",
+        examples=["2026-06-05T17:00:00Z"],
+    )
     version: int = Field(
         ...,
         description="Current version of the alert.",
@@ -131,6 +136,7 @@ GET_EXAMPLES = {
                     "source_ip": "192.168.1.1",
                     "status": "new",
                     "created_at": "2026-06-05T16:30:00Z",
+                    "updated_at": "2026-06-05T17:00:00Z",
                 },
                 {
                     "alert_id": "d0413bc4-0fb4-4df1-8e01-1b918b9595cd",
@@ -139,6 +145,7 @@ GET_EXAMPLES = {
                     "source_ip": "10.0.0.5",
                     "status": "new",
                     "created_at": "2026-06-05T16:28:15Z",
+                    "updated_at": "2026-06-05T16:28:15Z",
                 },
             ],
             "pagination": {
@@ -160,6 +167,7 @@ GET_EXAMPLES = {
                     "source_ip": "10.0.0.5",
                     "status": "new",
                     "created_at": "2026-06-05T16:28:15Z",
+                    "updated_at": "2026-06-05T16:28:15Z",
                 }
             ],
             "pagination": {"next_cursor": None, "limit": 10, "total": 1},
@@ -177,6 +185,7 @@ GET_EXAMPLES = {
                     "source_ip": "192.168.1.1",
                     "status": "new",
                     "created_at": "2026-06-05T16:30:00Z",
+                    "updated_at": "2026-06-05T17:00:00Z",
                 }
             ],
             "pagination": {"next_cursor": None, "limit": 10, "total": 1},
@@ -194,6 +203,7 @@ GET_EXAMPLES = {
                     "source_ip": "10.0.0.5",
                     "status": "new",
                     "created_at": "2026-06-05T16:28:15Z",
+                    "updated_at": "2026-06-05T16:28:15Z",
                 }
             ],
             "pagination": {"next_cursor": None, "limit": 10, "total": 1},
@@ -211,6 +221,7 @@ GET_EXAMPLES = {
                     "source_ip": "10.0.0.5",
                     "status": "new",
                     "created_at": "2026-06-05T16:28:15Z",
+                    "updated_at": "2026-06-05T16:28:15Z",
                 }
             ],
             "pagination": {"next_cursor": None, "limit": 1, "total": 2},

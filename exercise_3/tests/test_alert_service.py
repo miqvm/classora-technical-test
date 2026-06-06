@@ -67,6 +67,7 @@ async def test_create_alert_success(
         tags=alert_request.tags,
         status="new",
         created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
 
     # Mock repository.save() to return the created alert
@@ -99,6 +100,7 @@ async def test_create_alert_duplicate_raises_409(
         tags=[],
         status="new",
         created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
 
     # Attempt to create an alert and verify it raises HTTPException with 409 status

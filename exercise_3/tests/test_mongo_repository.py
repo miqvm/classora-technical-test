@@ -50,8 +50,8 @@ class FakeCollection:
             if doc["source_ip"] != query["source_ip"]:
                 continue
 
-            # Skip if created_at is before threshold
-            if doc["created_at"] < query["created_at"]["$gte"]:
+            # Skip if updated_at is before threshold
+            if doc["updated_at"] < query["updated_at"]["$gte"]:
                 continue
 
             # Add matching document to results
@@ -63,7 +63,7 @@ class FakeCollection:
 
         # Sort matches by creation date in descending order
         matches.sort(
-            key=lambda x: x["created_at"],
+            key=lambda x: x["updated_at"],
             reverse=True,
         )
 
@@ -146,6 +146,7 @@ def build_alert(
         tags=[],
         status="new",
         created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
 
 
@@ -213,8 +214,8 @@ async def test_find_recent_duplicate_not_found(
     # Create old test alert
     old_alert = build_alert()
 
-    # Set creation time to 10 minutes ago
-    old_alert.created_at = datetime.now(timezone.utc) - timedelta(minutes=10)
+    # Set updated time to 10 minutes ago
+    old_alert.updated_at = datetime.now(timezone.utc) - timedelta(minutes=10)
 
     # Save old alert to repository
     await repository.save(old_alert)

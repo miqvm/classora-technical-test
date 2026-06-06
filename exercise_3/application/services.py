@@ -66,6 +66,7 @@ class AlertService:
             tags=request.tags or [],
             status="new",
             created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
 
         return await self._repository.save(alert)

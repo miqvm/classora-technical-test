@@ -62,9 +62,9 @@ class MongoAlertRepository(AlertRepository):
             {
                 "title": title,
                 "source_ip": source_ip,
-                "created_at": {"$gte": cutoff},
+                "updated_at": {"$gte": cutoff},
             },
-            sort=[("created_at", -1)],
+            sort=[("updated_at", -1)],
         )
 
         if document is None:
@@ -120,7 +120,7 @@ class MongoAlertRepository(AlertRepository):
                 "title": title,
                 "source_ip": source_ip,
             },
-            sort=[("created_at", -1)],
+            sort=[("updated_at", -1)],
         )
 
         if document is None:
@@ -134,7 +134,13 @@ class MongoAlertRepository(AlertRepository):
         # Attempt to update the document ONLY if the version matches
         updated_document = await self._collection.find_one_and_update(
             {"_id": alert_id, "version": expected_version},
-            {"$set": {"status": new_status}, "$inc": {"version": 1}},
+            {
+                "$set": {
+                    "status": new_status,
+                    "updated_at": datetime.now(timezone.utc),
+                },
+                "$inc": {"version": 1},
+            },
             return_document=ReturnDocument.AFTER,
         )
 
@@ -161,6 +167,7 @@ class MongoAlertRepository(AlertRepository):
             "tags": alert.tags,
             "status": alert.status,
             "created_at": alert.created_at,
+            "updated_at": alert.updated_at,
             "version": alert.version,
         }
 
@@ -175,5 +182,6 @@ class MongoAlertRepository(AlertRepository):
             tags=document.get("tags", []),
             status=document["status"],
             created_at=document["created_at"],
+            updated_at=document["updated_at"],
             version=document.get("version", 1),
         )
