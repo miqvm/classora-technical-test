@@ -48,6 +48,7 @@ class AlertDatabase:
     Thread-safe in-memory database for storing alerts. Implements duplicate detection logic
     and supports filtering and cursor-based pagination.
     """
+
     def __init__(self):
         self._alerts: List[StoredAlert] = []
         self._lock = asyncio.Lock()
@@ -136,7 +137,7 @@ class AlertDatabase:
                     start_idx = idx + 1
                     cursor_found = True
                     break
-            
+
             if not cursor_found:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
