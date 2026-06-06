@@ -34,7 +34,8 @@ router = APIRouter(
     summary="Create a security alert",
     description=(
         "Registers a security alert event. "
-        "Checks for duplicates in the last 5 minutes."
+        "If the same title and IP occurred in the last 5 minutes, it is rejected as a duplicate. "
+        "If it occurred older than 5 minutes ago, it applies an update to the status using optimistic locking."
     ),
     responses={
         status.HTTP_201_CREATED: {
@@ -63,6 +64,7 @@ async def create_alert(
         source_ip=alert.source_ip,
         status=alert.status,
         created_at=alert.created_at,
+        version=alert.version,
     )
 
 
@@ -117,6 +119,7 @@ async def get_alerts(
                 source_ip=alert.source_ip,
                 status=alert.status,
                 created_at=alert.created_at,
+                version=alert.version,
             )
             for alert in page.items
         ],

@@ -22,3 +22,14 @@ class AlertRepository(Protocol):
         cursor: str | None,
         limit: int,
     ) -> Page[Alert]: ...
+
+    async def find_latest_by_title_and_ip(
+        self, title: str, source_ip: str
+    ) -> Alert | None: ...
+
+    async def update_status(
+        self,
+        alert_id: str,
+        new_status: str,
+        expected_version: int,
+    ) -> Alert: ...

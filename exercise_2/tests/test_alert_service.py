@@ -41,7 +41,8 @@ async def test_create_alert_success(
 ):
     # Mock repository to return no duplicate alerts
     repository.find_recent_duplicate.return_value = None
-
+    repository.find_latest_by_title_and_ip.return_value = None
+    
     # Create an alert object that will be returned by repository.save()
     saved_alert = Alert(
         alert_id="123",

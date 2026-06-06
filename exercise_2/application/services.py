@@ -30,7 +30,6 @@ class AlertService:
             source_ip=str(request.source_ip),
             within_seconds=300,
         )
-
         if duplicate:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -40,6 +39,17 @@ class AlertService:
                     "the last 5 minutes."
                 ),
             )
+
+        existsing_alert = await self._repository.find_latest_by_title_and_ip(
+            title=request.title,
+            source_ip=str(request.source_ip),
+        )
+        if existsing_alert:
+            return await self._repository.update_status(
+                    alert_id=existsing_alert.alert_id,
+                    new_status="updated",
+                    expected_version=existsing_alert.version
+                )
 
         alert = Alert(
             alert_id=str(uuid4()),

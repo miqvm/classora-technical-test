@@ -4,7 +4,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from motor.motor_asyncio import AsyncIOMotorCollection
+from pymongo import ReturnDocument
 
+from exercise_2.domain.exceptions import ConflictError, NotFoundError
 from exercise_2.domain.models import Alert, Page
 from exercise_2.domain.filters import AlertFilters
 from exercise_2.domain.ports import AlertRepository
@@ -112,6 +114,44 @@ class MongoAlertRepository(AlertRepository):
             next_cursor=next_cursor,
         )
 
+    async def find_latest_by_title_and_ip(
+        self, title: str, source_ip: str
+    ) -> Alert | None:
+        document = await self._collection.find_one(
+            {
+                "title": title,
+                "source_ip": source_ip,
+            },
+            sort=[("created_at", -1)],
+        )
+
+        if document is None:
+            return None
+
+        return self._to_domain(document)
+
+    async def update_status(
+        self, alert_id: str, new_status: str, expected_version: int
+    ) -> Alert:
+        # Attempt to update the document ONLY if the version matches
+        updated_document = await self._collection.find_one_and_update(
+            {"_id": alert_id, "version": expected_version},
+            {"$set": {"status": new_status}, "$inc": {"version": 1}},
+            return_document=ReturnDocument.AFTER,
+        )
+
+        if updated_document:
+            return self._to_domain(updated_document)
+
+        # If no document was returned, we must determine if it was a 404 or a 409
+        existing_doc = await self._collection.find_one({"_id": alert_id})
+        if existing_doc:
+            raise ConflictError(
+                f"Version mismatch for alert {alert_id}. Expected {expected_version}."
+            )
+        else:
+            raise NotFoundError(f"Alert {alert_id} not found.")
+
     @staticmethod
     def _to_document(alert: Alert) -> dict[str, Any]:
         return {
@@ -123,6 +163,7 @@ class MongoAlertRepository(AlertRepository):
             "tags": alert.tags,
             "status": alert.status,
             "created_at": alert.created_at,
+            "version": alert.version,
         }
 
     @staticmethod
@@ -136,4 +177,5 @@ class MongoAlertRepository(AlertRepository):
             tags=document.get("tags", []),
             status=document["status"],
             created_at=document["created_at"],
+            version=document.get("version", 1),
         )

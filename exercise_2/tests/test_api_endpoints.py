@@ -121,7 +121,7 @@ async def test_create_alert_endpoint_validation_error_raises_422(mock_service):
     ) as client:
         response = await client.post("/api/v1/alerts", json=payload)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     # Ensure Pydantic caught the errors, meaning the service shouldn't even be called
     errors = response.json()["detail"]
