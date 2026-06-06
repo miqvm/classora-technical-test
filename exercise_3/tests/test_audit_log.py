@@ -10,8 +10,6 @@ from exercise_3.domain.models import AuditLogEntry
 
 @pytest.fixture
 def memory_db_uri(tmp_path):
-    # tmp_path is a built-in pytest fixture that provides a temporary directory unique to this test run.
-    # We create a real file here so the schema persists between aiosqlite connections!
     db_file = tmp_path / "test_audit.db"
     return str(db_file)
 
@@ -25,7 +23,6 @@ async def repository(memory_db_uri):
 
 @pytest.mark.asyncio
 async def test_insert_audit_log_entry_is_persisted(repository, memory_db_uri):
-    # 1. Setup Dummy Data
     entry = AuditLogEntry(
         id=uuid.uuid4(),
         alert_id="alert-1234",
@@ -36,10 +33,8 @@ async def test_insert_audit_log_entry_is_persisted(repository, memory_db_uri):
         reason="Manual investigation started",
     )
 
-    # 2. Act: Insert via the repository
     await repository.insert(entry)
 
-    # 3. Assert: Verify via a raw direct connection
     async with aiosqlite.connect(memory_db_uri) as db:
         db.row_factory = aiosqlite.Row
 
@@ -48,7 +43,6 @@ async def test_insert_audit_log_entry_is_persisted(repository, memory_db_uri):
         ) as cursor:
             row = await cursor.fetchone()
 
-    # Verify everything matches perfectly
     assert row is not None
     assert row["id"] == str(entry.id)
     assert row["alert_id"] == "alert-1234"
