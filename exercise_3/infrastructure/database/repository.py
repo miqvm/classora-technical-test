@@ -5,9 +5,9 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from pymongo import ReturnDocument
 
 from exercise_2.domain.exceptions import ConflictError, NotFoundError
-from exercise_2.domain.models import Alert, Page
-from exercise_2.domain.filters import AlertFilters
-from exercise_2.domain.ports import AlertRepository
+from exercise_3.domain.models import Alert, Page
+from exercise_3.domain.filters import AlertFilters
+from exercise_3.domain.ports import AlertRepository
 
 
 class MongoAlertRepository(AlertRepository):

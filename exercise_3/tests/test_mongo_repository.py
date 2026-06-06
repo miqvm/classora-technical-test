@@ -2,9 +2,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from exercise_2.domain.models import Alert
-from exercise_2.domain.filters import AlertFilters
-from exercise_2.infrastructure.database.repository import (
+from exercise_3.domain.models import Alert
+from exercise_3.domain.filters import AlertFilters
+from exercise_3.infrastructure.database.repository import (
     MongoAlertRepository,
 )
 
@@ -214,7 +214,7 @@ async def test_find_recent_duplicate_not_found(
     # Create old test alert
     old_alert = build_alert()
 
-    # Set creation time to 10 minutes ago
+    # Set updated time to 10 minutes ago
     old_alert.updated_at = datetime.now(timezone.utc) - timedelta(minutes=10)
 
     # Save old alert to repository

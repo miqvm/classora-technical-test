@@ -1,10 +1,11 @@
 from typing import Protocol
 
-from exercise_2.domain.models import Alert, Page
-from exercise_2.domain.filters import AlertFilters
+from exercise_3.domain.models import Alert, Page, AuditLogEntry, EnrichmentData
+from exercise_3.domain.filters import AlertFilters
 
 
 class AlertRepository(Protocol):
+    """Repository protocol for managing Alert persistence."""
     async def save(self, alert: Alert) -> Alert: ...
 
     async def find_by_id(self, alert_id: str) -> Alert | None: ...
@@ -33,3 +34,13 @@ class AlertRepository(Protocol):
         new_status: str,
         expected_version: int,
     ) -> Alert: ...
+
+
+class AuditLogRepository(Protocol):
+    """Repository protocol for managing AuditLogEntry persistence."""
+    async def insert(self, entry: AuditLogEntry) -> None: ...
+
+
+class ThreatEnrichmentService(Protocol):
+    """Protocol for an external threat enrichment service."""
+    async def get_context(self, source_ip: str) -> EnrichmentData: ...

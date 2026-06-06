@@ -14,7 +14,9 @@ class Alert:
     description: str
     status: str
     created_at: datetime
+    updated_at: datetime
     tags: list[str] = field(default_factory=list)
+    version: int = 1
 
 
 T = TypeVar("T")

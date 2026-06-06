@@ -45,6 +45,29 @@ class AlertCreateRequest(BaseModel):
     )
 
 
+class EnrichmentResponse(BaseModel):
+    reputation_score: int = Field(
+        ...,
+        description="Threat reputation score (0-100).",
+        examples=[85],
+    )
+    categories: List[str] = Field(
+        ...,
+        description="Threat categories.",
+        examples=[["malware", "botnet"]],
+    )
+    last_seen: datetime = Field(
+        ...,
+        description="When the IP was last seen acting maliciously.",
+        examples=["2023-10-01T12:00:00Z"],
+    )
+    country: str = Field(
+        ...,
+        description="Country of origin.",
+        examples=["CN"],
+    )
+
+
 class AlertResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -84,6 +107,10 @@ class AlertResponse(BaseModel):
     version: int = Field(
         ...,
         description="Current version of the alert.",
+    )
+    enrichment: Optional[EnrichmentResponse] = Field(
+        default=None,
+        description="Threat enrichment data for the source IP, if available.",
     )
 
 
@@ -136,6 +163,7 @@ GET_EXAMPLES = {
                     "source_ip": "192.168.1.1",
                     "status": "new",
                     "created_at": "2026-06-05T16:30:00Z",
+                    "updated_at": "2026-06-05T17:00:00Z",
                 },
                 {
                     "alert_id": "d0413bc4-0fb4-4df1-8e01-1b918b9595cd",
@@ -144,6 +172,7 @@ GET_EXAMPLES = {
                     "source_ip": "10.0.0.5",
                     "status": "new",
                     "created_at": "2026-06-05T16:28:15Z",
+                    "updated_at": "2026-06-05T16:28:15Z",
                 },
             ],
             "pagination": {
@@ -165,6 +194,7 @@ GET_EXAMPLES = {
                     "source_ip": "10.0.0.5",
                     "status": "new",
                     "created_at": "2026-06-05T16:28:15Z",
+                    "updated_at": "2026-06-05T16:28:15Z",
                 }
             ],
             "pagination": {"next_cursor": None, "limit": 10, "total": 1},
@@ -182,6 +212,7 @@ GET_EXAMPLES = {
                     "source_ip": "192.168.1.1",
                     "status": "new",
                     "created_at": "2026-06-05T16:30:00Z",
+                    "updated_at": "2026-06-05T17:00:00Z",
                 }
             ],
             "pagination": {"next_cursor": None, "limit": 10, "total": 1},
@@ -199,6 +230,7 @@ GET_EXAMPLES = {
                     "source_ip": "10.0.0.5",
                     "status": "new",
                     "created_at": "2026-06-05T16:28:15Z",
+                    "updated_at": "2026-06-05T16:28:15Z",
                 }
             ],
             "pagination": {"next_cursor": None, "limit": 10, "total": 1},
@@ -216,6 +248,7 @@ GET_EXAMPLES = {
                     "source_ip": "10.0.0.5",
                     "status": "new",
                     "created_at": "2026-06-05T16:28:15Z",
+                    "updated_at": "2026-06-05T16:28:15Z",
                 }
             ],
             "pagination": {"next_cursor": None, "limit": 1, "total": 2},
