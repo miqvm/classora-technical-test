@@ -14,7 +14,7 @@ os.environ["MONGO_USER"] = "test_user"
 os.environ["MONGO_PASSWORD"] = "test_pass"
 os.environ["MONGO_DATABASE"] = "test_db"
 
-from exercise_3.domain.models import Alert, Page
+from exercise_3.domain.models import Alert, EnrichmentData, Page
 from exercise_3.infrastructure.api.schemas import SeverityEnum
 from exercise_3.main import app
 from exercise_3.dependencies import get_alert_service
@@ -39,8 +39,8 @@ def override_dependency(mock_service):
 # Test the creation endpoint returns a successful response
 @pytest.mark.asyncio
 async def test_create_alert_endpoint_success(mock_service):
-    # Setup the mock service to return a dummy Alert
-    mock_service.create_alert.return_value = Alert(
+    # Setup the mock service to return a dummy Alert AND EnrichmentData tuple
+    dummy_alert = Alert(
         alert_id="123e4567-e89b-12d3-a456-426614174000",
         title="Port Scan Detected",
         severity=SeverityEnum.MEDIUM,
@@ -51,6 +51,16 @@ async def test_create_alert_endpoint_success(mock_service):
         updated_at=datetime.now(timezone.utc),
         tags=["recon"],
     )
+
+    dummy_enrichment = EnrichmentData(
+        reputation_score=85,
+        categories=["recon", "scanner"],
+        last_seen="2026-06-05T12:00:00Z",
+        country="US",
+    )
+
+    # Return the tuple expected by the router
+    mock_service.create_alert.return_value = (dummy_alert, dummy_enrichment)
 
     payload = {
         "title": "Port Scan Detected",
@@ -69,8 +79,16 @@ async def test_create_alert_endpoint_success(mock_service):
 
     assert response.status_code == status.HTTP_201_CREATED
     data = response.json()
+
+    # Assert Alert properties
     assert data["alert_id"] == "123e4567-e89b-12d3-a456-426614174000"
     assert data["title"] == payload["title"]
+
+    # Assert Enrichment properties are nested correctly
+    assert "enrichment" in data
+    assert data["enrichment"]["reputation_score"] == 85
+    assert data["enrichment"]["country"] == "US"
+    assert "scanner" in data["enrichment"]["categories"]
 
     # Verify the service was actually called by the router
     mock_service.create_alert.assert_called_once()

@@ -45,6 +45,29 @@ class AlertCreateRequest(BaseModel):
     )
 
 
+class EnrichmentResponse(BaseModel):
+    reputation_score: int = Field(
+        ...,
+        description="Threat reputation score (0-100).",
+        examples=[85],
+    )
+    categories: List[str] = Field(
+        ...,
+        description="Threat categories.",
+        examples=[["malware", "botnet"]],
+    )
+    last_seen: datetime = Field(
+        ...,
+        description="When the IP was last seen acting maliciously.",
+        examples=["2023-10-01T12:00:00Z"],
+    )
+    country: str = Field(
+        ...,
+        description="Country of origin.",
+        examples=["CN"],
+    )
+
+
 class AlertResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -84,6 +107,10 @@ class AlertResponse(BaseModel):
     version: int = Field(
         ...,
         description="Current version of the alert.",
+    )
+    enrichment: Optional[EnrichmentResponse] = Field(
+        default=None,
+        description="Threat enrichment data for the source IP, if available.",
     )
 
 

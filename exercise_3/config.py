@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     sqlite_audit_db_path: str = "audit.db"
 
-    threat_intel_base_url: str = "https://threat-intel.example.com"
+    virustotal_api_key: str
 
     model_config = SettingsConfigDict(
         env_file=".env",

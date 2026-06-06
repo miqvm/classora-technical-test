@@ -53,6 +53,6 @@ class EnrichmentData:
     """
 
     reputation_score: int
-    last_seen: datetime | str  # Usually an ISO-8601 string or datetime object
+    last_seen: datetime
     country: str
     categories: list[str] = field(default_factory=list)

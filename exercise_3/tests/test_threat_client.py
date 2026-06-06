@@ -1,7 +1,7 @@
 import pytest
 import httpx
 
-from exercise_3.infrastructure.external.threat_client import (
+from exercise_3.infrastructure.external.dummy_threat_client import (
     HttpxThreatEnrichmentService,
 )
 from exercise_3.domain.exceptions import EnrichmentError

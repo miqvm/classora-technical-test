@@ -55,18 +55,35 @@ async def create_alert(
     request: AlertCreateRequest,
     service: AlertService = Depends(get_alert_service),
 ):
-    alert = await service.create_alert(request)
+    alert, enrichment = await service.create_alert(request)
 
-    return AlertResponse(
-        alert_id=alert.alert_id,
-        title=alert.title,
-        severity=alert.severity,
-        source_ip=alert.source_ip,
-        status=alert.status,
-        created_at=alert.created_at,
-        updated_at=alert.updated_at,
-        version=alert.version,
-    )
+    response_data = {
+        "alert_id": alert.alert_id,
+        "title": alert.title,
+        "severity": alert.severity,
+        "source_ip": alert.source_ip,
+        "status": alert.status,
+        "created_at": alert.created_at,
+        "updated_at": alert.updated_at,
+        "version": alert.version,
+    }
+
+    # If the enrichment call was successful, attach it to the response
+    if enrichment:
+        last_seen_str = (
+            enrichment.last_seen.isoformat()
+            if hasattr(enrichment.last_seen, "isoformat")
+            else str(enrichment.last_seen)
+        )
+
+        response_data["enrichment"] = {
+            "reputation_score": enrichment.reputation_score,
+            "categories": enrichment.categories,
+            "last_seen": last_seen_str,
+            "country": enrichment.country,
+        }
+
+    return AlertResponse(**response_data)
 
 
 @router.get(

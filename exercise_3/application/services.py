@@ -1,8 +1,10 @@
+import asyncio
 from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import HTTPException, status
 
+from exercise_3.domain.exceptions import EnrichmentError
 from exercise_3.domain.models import Alert, AuditLogEntry, EnrichmentData
 from exercise_3.domain.filters import AlertFilters
 from exercise_3.domain.ports import (
@@ -30,7 +32,7 @@ class AlertService:
     async def create_alert(
         self,
         request: AlertCreateRequest,
-    ) -> Alert:
+    ) -> tuple[Alert, EnrichmentData | None]:
         duplicate = await self._repository.find_recent_duplicate(
             title=request.title,
             source_ip=str(request.source_ip),
@@ -46,16 +48,29 @@ class AlertService:
                 ),
             )
 
-        existsing_alert = await self._repository.find_latest_by_title_and_ip(
+        # Helper function to safely call enrichment service without failing the entire request
+        async def safe_enrichment():
+            try:
+                return await self._enrichment_service.get_context(
+                    str(request.source_ip)
+                )
+            except EnrichmentError:
+                return None
+
+        existing_alert = await self._repository.find_latest_by_title_and_ip(
             title=request.title,
             source_ip=str(request.source_ip),
         )
-        if existsing_alert:
-            return await self._repository.update_status(
-                    alert_id=existsing_alert.alert_id,
+        if existing_alert:
+            updated_alert, enrichment_data = await asyncio.gather(
+                self._repository.update_status(
+                    alert_id=existing_alert.alert_id,
                     new_status="updated",
-                    expected_version=existsing_alert.version
-                )
+                    expected_version=existing_alert.version,
+                ),
+                safe_enrichment(),
+            )
+            return updated_alert, enrichment_data
 
         alert = Alert(
             alert_id=str(uuid4()),
@@ -68,8 +83,10 @@ class AlertService:
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
-
-        return await self._repository.save(alert)
+        saved_alert, enrichment_data = await asyncio.gather(
+            self._repository.save(alert), safe_enrichment()
+        )
+        return saved_alert, enrichment_data
 
     async def get_alert_by_id(
         self,
@@ -97,7 +114,7 @@ class AlertService:
 
     async def change_alert_status(
         self,
-        alert_id: str,
+        alert: Alert,
         new_status: str,
         changed_by: str,
         reason: str | None = None,
@@ -105,28 +122,18 @@ class AlertService:
         """
         Updates the status of an alert and records an immutable audit log entry.
         """
-        alert = await self._repository.find_by_id(alert_id)
-        if not alert:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Alert {alert_id} not found.",
-            )
-
-        old_status = alert.status
-
-        # If the status isn't actually changing, you can optionally skip logging/saving
-        if old_status == new_status:
-            return alert
-
         # Update status and save
-        alert.status = new_status
-        saved_alert = await self._repository.save(alert)
+        saved_alert = await self._repository.update_status(
+            alert_id=alert.alert_id,
+            new_status=new_status,
+            expected_version=alert.version,
+        )
 
         # Record immutable audit entry
         audit_entry = AuditLogEntry(
             id=uuid4(),
-            alert_id=alert_id,
-            from_status=old_status,
+            alert_id=alert.alert_id,
+            from_status=alert.status,
             to_status=new_status,
             changed_by=changed_by,
             changed_at=datetime.now(timezone.utc),

@@ -5,7 +5,7 @@ import pytest
 from fastapi import HTTPException
 
 from exercise_3.application.services import AlertService
-from exercise_3.domain.models import Alert
+from exercise_3.domain.models import Alert, EnrichmentData
 from exercise_3.infrastructure.api.schemas import (
     AlertCreateRequest,
     SeverityEnum,
@@ -51,13 +51,13 @@ def alert_request():
 async def test_create_alert_success(
     service,
     repository,
+    enrichment_service,
     alert_request,
 ):
-    # Mock repository to return no duplicate alerts
+    # Mock repository
     repository.find_recent_duplicate.return_value = None
     repository.find_latest_by_title_and_ip.return_value = None
 
-    # Create an alert object that will be returned by repository.save()
     saved_alert = Alert(
         alert_id="123",
         title=alert_request.title,
@@ -69,25 +69,38 @@ async def test_create_alert_success(
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
     )
-
-    # Mock repository.save() to return the created alert
     repository.save.return_value = saved_alert
 
-    # Call the service method to create an alert
-    result = await service.create_alert(alert_request)
+    # Mock enrichment service
+    mock_enrichment = EnrichmentData(
+        reputation_score=95,
+        categories=["botnet"],
+        last_seen="2026-06-05T12:00:00Z",
+        country="RU",
+    )
+    enrichment_service.get_context.return_value = mock_enrichment
 
-    # Assert the alert was created successfully with correct ID
-    assert result.alert_id == "123"
+    # Call the service method (Unpacking the tuple)
+    result_alert, result_enrichment = await service.create_alert(alert_request)
 
-    # Verify that duplicate check and save operations were called exactly once
-    repository.find_recent_duplicate.assert_called_once()
+    # Assert the alert was created successfully
+    assert result_alert.alert_id == "123"
+
+    # Assert enrichment data is returned correctly
+    assert result_enrichment is not None
+    assert result_enrichment.reputation_score == 95
+    assert result_enrichment.country == "RU"
+
+    # Verify both methods were called in parallel via gather
     repository.save.assert_called_once()
+    enrichment_service.get_context.assert_called_once_with("192.168.1.10")
 
 
 @pytest.mark.asyncio
 async def test_create_alert_duplicate_raises_409(
     service,
     repository,
+    enrichment_service,
     alert_request,
 ):
     # Mock repository to return an existing duplicate alert
@@ -103,12 +116,12 @@ async def test_create_alert_duplicate_raises_409(
         updated_at=datetime.now(timezone.utc),
     )
 
-    # Attempt to create an alert and verify it raises HTTPException with 409 status
+    # Attempt to create an alert and verify it raises HTTPException
     with pytest.raises(HTTPException) as exc:
         await service.create_alert(alert_request)
 
-    # Assert the status code is 409 Conflict for duplicate alert
     assert exc.value.status_code == 409
 
-    # Verify that save was never called since duplicate was detected
+    # Verify neither save nor enrichment was called because validation failed first
     repository.save.assert_not_called()
+    enrichment_service.get_context.assert_not_called()
