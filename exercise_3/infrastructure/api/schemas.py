@@ -76,6 +76,10 @@ class AlertResponse(BaseModel):
         description="Timestamp indicating when the alert was created (ISO-8601 UTC).",
         examples=["2026-06-05T16:30:00Z"],
     )
+    version: int = Field(
+        ...,
+        description="Current version of the alert.",
+    )
 
 
 class PaginationInfo(BaseModel):
