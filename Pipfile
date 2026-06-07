@@ -4,18 +4,18 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = {extras = ["standard"], version = "*"}
-pydantic = "*"
-motor = "*"
-pydantic-settings = "*"
-python-dotenv = "*"
-pytest = "*"
-pytest-asyncio = "*"
-aiosqlite = "*"
-httpx = "*"
+fastapi = {extras = ["standard"], version = "==0.136.3"}
+pydantic = "==2.13.4"
+motor = "==3.7.1"
+pydantic-settings = "==2.14.1"
+python-dotenv = "==1.2.2"
+pytest = "==9.0.3"
+pytest-asyncio = "==1.4.0"
+aiosqlite = "==0.22.1"
+httpx = "==0.28.1"
 
 [dev-packages]
-pytest-asyncio = "*"
+pytest-asyncio = "==1.4.0"
 
 [requires]
 python_version = "3.14"

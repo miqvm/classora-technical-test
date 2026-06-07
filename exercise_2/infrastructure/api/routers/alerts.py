@@ -128,6 +128,6 @@ async def get_alerts(
         pagination=PaginationInfo(
             next_cursor=page.next_cursor,
             limit=limit,
-            total=len(page.items),  # or page.total if you add it to Page
+            total=len(page.items),
         ),
     )
