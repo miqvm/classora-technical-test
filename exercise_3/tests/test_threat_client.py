@@ -7,7 +7,7 @@ from exercise_3.infrastructure.external.dummy_threat_client import (
 from exercise_3.domain.exceptions import EnrichmentError
 
 
-# Test 1 - Success
+# Success
 @pytest.mark.asyncio
 async def test_enrichment_success_parses_data():
     def mock_handler(request: httpx.Request):
@@ -31,7 +31,7 @@ async def test_enrichment_success_parses_data():
     assert result.country == "US"
 
 
-# Test 2 - Retry Logic
+# Retry Logic
 @pytest.mark.asyncio
 async def test_enrichment_retries_on_5xx_and_succeeds():
     call_count = 0
@@ -61,7 +61,7 @@ async def test_enrichment_retries_on_5xx_and_succeeds():
     assert result.reputation_score == 50
 
 
-# Test 3 - Max Retries Failure
+# Max Retries Failure
 @pytest.mark.asyncio
 async def test_enrichment_fails_after_max_retries():
     call_count = 0
@@ -81,7 +81,7 @@ async def test_enrichment_fails_after_max_retries():
     assert "HTTP 500" in str(exc_info.value)
 
 
-# Test 4 - Timeout
+# Timeout
 @pytest.mark.asyncio
 async def test_enrichment_raises_error_on_timeout():
     def mock_handler(request: httpx.Request):

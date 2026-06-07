@@ -63,10 +63,11 @@ class AlertService:
         )
         if existing_alert:
             updated_alert, enrichment_data = await asyncio.gather(
-                self._repository.update_status(
-                    alert_id=existing_alert.alert_id,
+                self.change_alert_status(
+                    alert=existing_alert,
                     new_status="updated",
-                    expected_version=existing_alert.version,
+                    changed_by="system",
+                    reason="Duplicate alert detected, updating existing alert.",
                 ),
                 safe_enrichment(),
             )
